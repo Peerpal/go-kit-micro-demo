@@ -1,0 +1,24 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator db {
+  provider = "go run github.com/prisma/prisma-client-go"
+  output   = "./"
+  package  = "prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:dev.db"
+  // url      = env("DATABASE_URL")
+}
+
+model Document {
+    id               String            @id @default(cuid())
+    content String
+    title   String
+    author  String
+    topic String
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+}
