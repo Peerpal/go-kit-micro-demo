@@ -1,21 +1,21 @@
 package main
 
 import (
-    "fmt"
-    "github.com/go-kit/kit/log"
-    kitgrpc "github.com/go-kit/kit/transport/grpc"
-    "github.com/oklog/oklog/pkg/group"
-    "google.golang.org/grpc"
-    pb "micro_demo/api/v1/watermark"
-    "micro_demo/pkg/watermark"
-    "micro_demo/pkg/watermark/endpoints"
-    "micro_demo/pkg/watermark/transport"
-    "micro_demo/prisma"
-    "net"
-    "net/http"
-    "os"
-    "os/signal"
-    "syscall"
+	"fmt"
+	"github.com/go-kit/kit/log"
+	kitgrpc "github.com/go-kit/kit/transport/grpc"
+	"github.com/oklog/oklog/pkg/group"
+	"google.golang.org/grpc"
+	pb "micro_demo/api/v1/watermark"
+	"micro_demo/pkg/watermark"
+	"micro_demo/pkg/watermark/endpoints"
+	"micro_demo/pkg/watermark/transport"
+	"micro_demo/prisma"
+	"net"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 const (
@@ -25,7 +25,7 @@ const (
 
 func main() {
 	var (
-		logger log.Logger
+		logger   log.Logger
 		httpAddr = net.JoinHostPort("localhost", envString("HTTP_PORT", defaultHTTPPort))
 		grpcAddr = net.JoinHostPort("localhost", envString("GRPC_PORT", defaultGRPCPort))
 	)
@@ -38,13 +38,13 @@ func main() {
 	prismaClient = prisma.NewClient()
 
 	var (
-		service = watermark.NewService(prismaClient)
-		endps = endpoints.NewEndpointSet(service)
+		service     = watermark.NewService(prismaClient)
+		endps       = endpoints.NewEndpointSet(service)
 		httpHandler = transport.NewHTTPHandler(endps)
-		grpcServer = transport.NewGrpcServer(endps)
-
+		grpcServer  = transport.NewGrpcServer(endps)
 	)
 
+	logger.Log("starting code")
 
 	var g group.Group
 	{
@@ -80,14 +80,14 @@ func main() {
 	}
 	{
 		// This function just sits and waits for ctrl-C.
-		cancelInterupt := make (chan struct{})
+		cancelInterupt := make(chan struct{})
 		g.Add(func() error {
 			c := make(chan os.Signal, 1)
 			signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
 			select {
-            case sig := <-c:
+			case sig := <-c:
 				return fmt.Errorf("received Signal %s", sig)
-            case <-cancelInterupt:
+			case <-cancelInterupt:
 				return nil
 
 			}
@@ -95,8 +95,8 @@ func main() {
 			close(cancelInterupt)
 		})
 	}
+	logger.Log("exit", g.Run())
 }
-
 
 func envString(env, fallback string) string {
 	e := os.Getenv(env)
